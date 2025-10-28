@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using FluentAssertions;
+using FluentAssertions.Equivalency;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
 namespace HomeExercise.Tasks.ObjectComparison;
@@ -10,20 +12,13 @@ public class ObjectComparison
     public void CheckCurrentTsar()
     {
         var actualTsar = TsarRegistry.GetCurrentTsar();
-
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
-
-        // Перепишите код на использование Fluent Assertions.
-        ClassicAssert.AreEqual(actualTsar.Name, expectedTsar.Name);
-        ClassicAssert.AreEqual(actualTsar.Age, expectedTsar.Age);
-        ClassicAssert.AreEqual(actualTsar.Height, expectedTsar.Height);
-        ClassicAssert.AreEqual(actualTsar.Weight, expectedTsar.Weight);
-
-        ClassicAssert.AreEqual(expectedTsar.Parent!.Name, actualTsar.Parent!.Name);
-        ClassicAssert.AreEqual(expectedTsar.Parent.Age, actualTsar.Parent.Age);
-        ClassicAssert.AreEqual(expectedTsar.Parent.Height, actualTsar.Parent.Height);
-        ClassicAssert.AreEqual(expectedTsar.Parent.Parent, actualTsar.Parent.Parent);
+        
+        //Fluent Assertions
+        actualTsar.Should()
+            .BeEquivalentTo(expectedTsar, options => options
+                .Excluding((IMemberInfo memberInfo) => memberInfo.Name == "Id"));
     }
 
     [Test]
@@ -33,8 +28,21 @@ public class ObjectComparison
         var actualTsar = TsarRegistry.GetCurrentTsar();
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
-
-        // Какие недостатки у такого подхода? 
+        
+        // Какие недостатки у такого подхода?
+        /*
+        Недостатки: 
+        1. При падении теста нет возможности отследить причину, так как вывод теста это True либо False
+        2. Нет обработки рекурсии, приложение может упасть с ошибкой переполнения стека при циклических ссылках Parent.
+        3. При измении Person (удаление/добавление свойств), придется модифицировать метод 
+        
+        Мое решение лучше тем, что:  
+        1. В случае не прохождения теста, выводит все причины 
+        2. Отсутствие дублирования кода
+        3. Обработка рекурсии под капотом: рекурсия выполняется до 10 уровней, далее тест падает с ошибкой, что есть 
+        циклическая зависимость 
+        4. Person расширяем: нет необходимости в модификации метода
+        */
         ClassicAssert.True(AreEqual(actualTsar, expectedTsar));
     }
 

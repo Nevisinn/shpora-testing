@@ -14,11 +14,11 @@ public class ObjectComparison
         var actualTsar = TsarRegistry.GetCurrentTsar();
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
-        
+
         //Fluent Assertions
         actualTsar.Should()
             .BeEquivalentTo(expectedTsar, options => options
-                .Excluding((IMemberInfo memberInfo) => memberInfo.Name == "Id"));
+                .Excluding((IMemberInfo memberInfo) => memberInfo.Name == nameof(Person.Id)));
     }
 
     [Test]
